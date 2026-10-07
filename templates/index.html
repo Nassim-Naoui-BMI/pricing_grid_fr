@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Grilles Tarifaires</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Pricing App</h2>
+        <nav>
+            <button class="nav-btn active" data-target="edition">Édition de grille</button>
+            <button class="nav-btn" data-target="consultation">Consultation de prix</button>
+        </nav>
+    </div>
+
+    <main class="content">
+        <!-- VUE : ÉDITION DE GRILLE -->
+        <section id="edition" class="view-section active">
+            <header>
+                <h1>Édition de grille tarifaire</h1>
+                <p>Configurez les paramètres et filtres avant de lancer le job d'édition.</p>
+            </header>
+
+            <div class="card configuration-card">
+                <h3>Paramètres Généraux</h3>
+                <div class="form-group-row">
+                    <div class="input-group">
+                        <label for="marque">Marque</label>
+                        <select id="marque">
+                            <option value="Monier" selected>Monier</option>
+                            <option value="Siplast">Siplast</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="type-grille">Type de grille</label>
+                        <select id="type-grille">
+                            <option value="individuelle">Grille Individuelle (1 client)</option>
+                            <option value="consolidee">Grille Consolidée (Multiclients)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card filters-card">
+                <h3>Filtres Clients (Interconnectés)</h3>
+                
+                <!-- AUTOCOMPLÉTION AJOUTÉE ICI -->
+                <div class="search-bar autocomplete-container">
+                    <label for="search-client">Recherche Client</label>
+                    <input type="text" id="search-client" placeholder="Rechercher par ID externe ou Nom du client..." autocomplete="off">
+                    <ul id="autocomplete-list" class="autocomplete-items"></ul>
+                </div>
+
+                <div class="filters-grid">
+                    <div class="input-group">
+                        <label for="filter-dr">Directeur Régional (DR)</label>
+                        <select id="filter-dr"><option value="">Tous</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="filter-dc">Délégué Commercial (DC)</label>
+                        <select id="filter-dc"><option value="">Tous</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="filter-dep">Département</label>
+                        <select id="filter-dep"><option value="">Tous</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="filter-h1">Hiérarchie Niv 1</label>
+                        <select id="filter-h1"><option value="">Toutes</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="filter-h2">Hiérarchie Niv 2</label>
+                        <select id="filter-h2"><option value="">Toutes</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="filter-h3">Hiérarchie Niv 3</label>
+                        <select id="filter-h3"><option value="">Toutes</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLEAU DES CLIENTS SÉLECTIONNÉS AJOUTÉ ICI -->
+            <div class="card selected-clients-card">
+                <h3>Clients correspondants (<span id="client-count">0</span>)</h3>
+                <div class="table-responsive">
+                    <table id="clients-table">
+                        <thead>
+                            <tr>
+                                <th>ID Externe</th>
+                                <th>Nom Client</th>
+                                <th>Dép.</th>
+                                <th>DC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rempli par JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button id="btn-launch-job" class="btn-primary">Lancer l'édition du Job</button>
+            </div>
+        </section>
+
+        <!-- VUE : CONSULTATION DE PRIX -->
+        <section id="consultation" class="view-section">
+            <header>
+                <h1>Consultation de prix</h1>
+            </header>
+            <div class="card">
+                <p><em>En construction...</em></p>
+            </div>
+        </section>
+    </main>
+
+    <!-- TERMINAL SIDEBAR AJOUTÉ ICI -->
+    <aside id="terminal-sidebar" class="terminal-sidebar">
+        <div class="terminal-header">
+            <span>💻 Terminal Job Runner</span>
+            <button id="close-terminal" class="close-btn">✖</button>
+        </div>
+        <div id="terminal-content" class="terminal-content">
+            <!-- Logs injectés par JS -->
+        </div>
+    </aside>
+
+    <script src="../static/js/script.js"></script>
+</body>
+</html>
