@@ -6,7 +6,7 @@ from src.pricing_grid_fr import config
 class DataLoader:
     def __init__(self):
         """Initialise le DataLoader en utilisant les paramètres de config.py"""
-        # self.load_all()
+        self.load_all()
 
     def load_all(self):
         print("Chargement des bases de données...")
@@ -58,7 +58,10 @@ class DataLoader:
 
     def _generate_customer_catalogue(self) -> dict:
         catalogue = self._load_clients()
-        return catalogue.to_json(orient="records")
+        zd01 = self._load_zd01()
+        ids = zd01["id_externe"]
+        catalogue_filtered = catalogue[catalogue["id_externe"].isin(ids)]
+        return catalogue_filtered.to_json(orient="records")
 
     def _load_produits(self) -> pd.DataFrame:
         df = pd.read_excel(config.DIR_SAP_CURRENT / config.FILES["produits_sap"])

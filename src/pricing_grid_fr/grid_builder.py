@@ -131,7 +131,7 @@ class GridBuilder:
 
         # Définition du nom de fichier
         suffix = "_dérog" if is_derog else ""
-        filename = f"{client_id}_{info['nom']}_{info['dep']}{suffix}_dev.xlsx"
+        filename = f"{client_id}_{info['nom']}_{info['dep']}{suffix}.xlsx"
         filepath = self.output_dir / filename
 
         wb = Workbook()

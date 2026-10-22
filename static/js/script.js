@@ -1,23 +1,14 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async () => {    
+    
+    
     // 1. INITIALISATION DE LA DB LOCALE (Mock data pour l'exemple)
     const mockData = await  getCustomerCatalogue() || [];
 
-    // [
-    //     { id_externe: "1020051", id_externe_marque: "1020051MON", nom_client: "AZOVSPECTECHNOLOGY LLC", code_dep: "NR", dc: "PEREZ GARCIA MATEO", dr: "PEREZ GARCIA MATEO", cust_sales_level_1: "1475 Export" },
-    //     { id_externe: "1025551", id_externe_marque: "1025551MON", nom_client: "SAS Terres Cuites de Bourgogne", code_dep: "71", dc: "SIXT CLAUDE", dr: "QUINTANEIRO CARLOS", cust_sales_level_1: "2360 VENTES DIRECTES ENTREPRISES AUTRES" },
-    //     { id_externe: "1029999", id_externe_marque: "1029999MON", nom_client: "Toiture de Lyon", code_dep: "69", dc: "SIXT CLAUDE", dr: "QUINTANEIRO CARLOS", cust_sales_level_1: "1475 Export" },
-    //     { id_externe: "1031111", id_externe_marque: "1031111MON", nom_client: "Bati Sud", code_dep: "13", dc: "DURAND JEAN", dr: "MARTIN PAUL", cust_sales_level_1: "1100 GSS" }
-    // ];
-
-    // if (!Array.isArray(mockData)) {
-    //     mockData = Object.values(mockData); 
-    // }
-
-    // Maintenant mockData est un tableau, le reste de votre code marchera !
     localStorage.setItem("clientsDB", JSON.stringify(mockData));
     const clients = JSON.parse(localStorage.getItem("clientsDB"));
     console.log(clients)
 
+    
     // Éléments du DOM
     const elements = {
         search: document.getElementById('search-client'),
@@ -32,6 +23,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         count: document.getElementById('client-count')
     };
 
+    let currentFilteredIds = []
+
     // 2. LOGIQUE D'AUTOCOMPLÉTION
     elements.search.addEventListener('input', function() {
         const val = this.value.toLowerCase();
@@ -42,9 +35,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const matches = clients.filter(c => 
-            c.nom_client.toLowerCase().includes(val) || c.id_externe.includes(val)
-        ).slice(0, 10); // Limite à 10 résultats pour ne pas surcharger
+        const matches = clients.filter(c => {
+            const nomClient = c.nom_client ? String(c.nom_client).toLowerCase() : "";
+            const idExterne = c.id_externe ? String(c.id_externe).toLowerCase() : "";
+            
+            return nomClient.includes(val) || idExterne.includes(val);
+        }).slice(0, 10);
 
         matches.forEach(match => {
             const li = document.createElement('li');
@@ -108,7 +104,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const h3Val = elements.h3.value;
 
         const filteredClients = clients.filter(client => {
-            const matchSearch = client.nom_client.toLowerCase().includes(searchVal) || client.id_externe.includes(searchVal);
+            const nomClient = client.nom_client ? String(client.nom_client).toLowerCase() : "";
+            const idExterne = client.id_externe ? String(client.id_externe).toLowerCase() : "";
+            const matchSearch = nomClient.includes(searchVal) || idExterne.includes(searchVal);
             const matchDr = drVal ? client.dr === drVal : true;
             const matchDc = dcVal ? client.dc === dcVal : true;
             const matchDep = depVal ? client.code_dep === depVal : true;
@@ -127,6 +125,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         populateSelect(elements.h3, getUniqueValues(filteredClients, 'cust_sales_level_3'), h3Val);
 
         renderTable(filteredClients); // Met à jour le tableau affiché
+
+        currentFilteredIds = filteredClients.map(client => client.id_externe)
+        
     }
 
     // Attacher les événements aux filtres
@@ -139,6 +140,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 4. GESTION DU TERMINAL ET DU JOB
     const terminal = document.getElementById('terminal-sidebar');
     const terminalContent = document.getElementById('terminal-content');
+    const btnLaunchJob = document.getElementById('btn-launch-job');
 
     function logToTerminal(message, type = 'info') {
         const div = document.createElement('div');
@@ -153,66 +155,84 @@ document.addEventListener("DOMContentLoaded", async () => {
         terminal.classList.remove('open');
     });
 
-    document.getElementById('btn-launch-job').addEventListener('click', () => {
+    btnLaunchJob.addEventListener('click', () => {
         const clientCount = parseInt(elements.count.textContent);
         if (clientCount === 0) {
             alert("Veuillez sélectionner au moins un client pour générer une grille.");
             return;
         }
 
-        // Préparation du payload
+        // Préparation du payload avec le format JSON exact attendu
         const payload = {
             marque: document.getElementById('marque').value,
             type_grille: document.getElementById('type-grille').value,
-            filters: {
-                search: elements.search.value,
-                dr: elements.dr.value,
-                dc: elements.dc.value,
-                dep: elements.dep.value,
-                h1: elements.h1.value
-            }
+            clients_ids: currentFilteredIds // Utilise le tableau d'IDs mis à jour par tes filtres
         };
 
-        // Ouverture du terminal et simulation
+        console.log(payload)
+
+        // Ouverture du terminal et préparation de l'UI
         terminal.classList.add('open');
         terminalContent.innerHTML = ''; // Reset du terminal
-        logToTerminal('Initialisation du worker...', 'info');
-        logToTerminal(`Type: ${payload.type_grille.toUpperCase()} | Marque: ${payload.marque}`, 'warning');
-        logToTerminal(`Extraction de ${clientCount} clients correspondants...`, 'info');
+        btnLaunchJob.disabled = true;   // Empêche le double clic pendant le traitement
+        
+        logToTerminal('Initialisation de la requête...', 'info');
+        logToTerminal(`Génération pour ${clientCount} client(s) (Marque: ${payload.marque}, Type: ${payload.type_grille})...`, 'warning');
 
-        // Simulation d'un appel réseau (à remplacer par ton vrai fetch)
-        setTimeout(() => {
-            logToTerminal('Connexion au serveur Flask établie.', 'success');
-            logToTerminal('Génération des PDF/Excel en cours...', 'info');
-            
-            // ICI: METTRE TON VRAI FETCH VERS L'API FLASK
-            /*
-            fetch('/api/generer_grille', {
+        try {
+            // 1. Appel réseau POST vers la nouvelle route Flask
+            fetch('/api/edit-grid', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
-            }).then(response => response.json()).then(data => {
-                if(data.status === 'success') {
-                    logToTerminal(data.message, 'success');
-                } else {
-                    logToTerminal(data.message, 'error');
+            }).then(response => {
+                if (!response.ok) {
+                    logToTerminal(`Erreur serveur HTTP: ${response.status}`, 'error');
                 }
-            }).catch(err => logToTerminal('Erreur de connexion : ' + err, 'error'));
-            */
+            }).catch(err => {
+                logToTerminal(`Erreur réseau: ${err.message}`, 'error');
+            });
 
-            // Simulation de la fin du job pour l'UX
-            setTimeout(() => {
-                logToTerminal('✔ Grille générée avec succès.', 'success');
-                logToTerminal('Fichier enregistré dans : output/grilles/', 'info');
-            }, 2000);
+            // 2. Écoute immédiate des logs via la route SSE
+            const evtSource = new EventSource("/api/progress");
+            
+            evtSource.onmessage = function(event) {
+                const logData = JSON.parse(event.data);
+                
+                // Choix de la couleur selon l'étape du worker
+                let logType = 'info';
+                if (logData.step === 'START') logType = 'warning';
+                if (logData.step === 'PROGRESS') logType = 'success';
+                if (logData.step === 'DONE') logType = 'success';
+                if (logData.step === 'ERROR') logType = 'error';
 
-        }, 1000);
+                // Écriture en temps réel dans le terminal
+                logToTerminal(`[${logData.step}] ${logData.message}`, logType);
+                
+                // Si le job est terminé (succès ou échec), on ferme la connexion
+                if (logData.step === "DONE" || logData.step === "ERROR") {
+                    evtSource.close();
+                    btnLaunchJob.disabled = false; // Réactivation du bouton
+                }
+            };
+
+            evtSource.onerror = function(err) {
+                console.error("Erreur de flux SSE:", err);
+                logToTerminal("Erreur de connexion au flux de logs Redis.", "error");
+                evtSource.close();
+                btnLaunchJob.disabled = false;
+            };
+
+        } catch (error) {
+            logToTerminal(`Erreur inattendue: ${error.message}`, 'error');
+            btnLaunchJob.disabled = false;
+        }
     });
 });
 
 
 async function getCustomerCatalogue() {
-  const url = "http://127.0.0.1:5000/customer/catalogue"; 
+  const url = "/customer/catalogue"; 
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -220,7 +240,6 @@ async function getCustomerCatalogue() {
     }
 
     const result = await response.json();
-    console.log(result)
     return result
   } catch (error) {
     console.error(error.message);

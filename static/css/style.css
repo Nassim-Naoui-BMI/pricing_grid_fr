@@ -14,10 +14,16 @@ body { display: flex; height: 100vh; background-color: var(--bg-color); color: v
 
 /* Sidebar Navigation */
 .sidebar { width: 260px; background: #111827; color: white; padding: 2rem 1rem; }
-.sidebar h2 { margin-bottom: 2rem; padding-left: 1rem; font-size: 1.5rem; }
+/* .sidebar h2 { margin-bottom: 2rem; padding-left: 1rem; font-size: 1.5rem; } */
 .nav-btn { display: block; width: 100%; text-align: left; background: none; border: none; color: #9ca3af; padding: 1rem; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: all 0.2s; margin-bottom: 0.5rem; }
 .nav-btn:hover { background: #1f2937; color: white; }
 .nav-btn.active { background: var(--primary); color: white; font-weight: bold; }
+
+.sidebar .title {display: flex; justify-content: space-around; align-items: center;margin-bottom: 2rem;  font-size: 1.2rem;}
+.sidebar .title img {width: 50px;}
+
+/* Loader Content */
+/* .loader-section  */
 
 /* Main Content */
 .content { flex: 1; padding: 2rem 4rem; overflow-y: auto; }

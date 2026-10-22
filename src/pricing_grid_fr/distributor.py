@@ -45,3 +45,5 @@ class FileDistributor:
 
         shutil.move(source_path, target_path)
         print(f"✅ {source_path.name} déplacé vers {target_dir}")  # [cite: 1]
+
+        return target_path
