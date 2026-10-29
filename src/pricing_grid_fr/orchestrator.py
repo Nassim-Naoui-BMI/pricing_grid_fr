@@ -9,9 +9,9 @@ from src.pricing_grid_fr.notifier import ProgressNotifier
 
 
 class GridOrchestrator:
-    def __init__(self):
+    def __init__(self, redis_cache):
         print("Initialisation de l'orchestrateur...")
-        self.loader = DataLoader()
+        self.loader = redis_cache
         self.engine = PricingEngine(self.loader)
         self.builder = GridBuilder(self.loader)
         self.formatter = ExcelFormatter()
@@ -63,9 +63,9 @@ class GridOrchestrator:
         En cas d'échec sur un client, il est placé dans une file d'attente pour être réessayé.
         """
         failed_clients = client_ids.copy()
+        total_clients = len(client_ids)
+        success_count = 0
         attempt = 1
-        step = 1
-        progress = 0
 
         while failed_clients and attempt <= max_retries:
             print(
@@ -84,8 +84,8 @@ class GridOrchestrator:
 
                     self.process_single_client(client_id)
 
-                    progress = round(step / len(client_ids) * 100)
-                    step += 1
+                    success_count += 1
+                    progress = round((success_count / total_clients) * 100)
 
                     print(f"[{client_id}] Traitement réussi.")
 

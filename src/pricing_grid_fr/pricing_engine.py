@@ -41,6 +41,7 @@ class PricingEngine:
             df = pd.merge(
                 df, self.db.zd03_derog, how="left", on=["id_externe", "Article"]
             )
+
             df = df[df["Dérog"].notna()].copy()
             df["ZD01"] = df["ZD01"].fillna(0)
 
@@ -93,7 +94,9 @@ class PricingEngine:
             df["Prix diffus"] = round(
                 df["Rate"] * (1 - df["ZD01"]) * (1 - df["ZD03"]), 2
             )
-            df["Remise totale"] = (df["Rate"] - df["Prix diffus"]) / df["Rate"]
+            df["Remise totale"] = round(
+                (df["Rate"] - df["Prix diffus"]) / df["Rate"], 2
+            )
 
             # Mise en forme finale Standard
             df = df.rename(

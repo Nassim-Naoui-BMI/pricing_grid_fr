@@ -6,7 +6,8 @@ from src.pricing_grid_fr import config
 class DataLoader:
     def __init__(self):
         """Initialise le DataLoader en utilisant les paramètres de config.py"""
-        self.load_all()
+        # self.load_all()
+        pass
 
     def load_all(self):
         print("Chargement des bases de données...")
@@ -56,10 +57,10 @@ class DataLoader:
         df["id_externe"] = df["id_externe"].astype(int)
         return df
 
-    def _generate_customer_catalogue(self) -> dict:
-        catalogue = self._load_clients()
-        zd01 = self._load_zd01()
-        ids = zd01["id_externe"]
+    def _generate_customer_catalogue(self, catalogue, zd01) -> dict:
+        # catalogue = self._load_clients()
+        # zd01 = self._load_zd01()
+        ids = zd01["id_externe"].unique()
         catalogue_filtered = catalogue[catalogue["id_externe"].isin(ids)]
         return catalogue_filtered.to_json(orient="records")
 
@@ -67,6 +68,10 @@ class DataLoader:
         df = pd.read_excel(config.DIR_SAP_CURRENT / config.FILES["produits_sap"])
         df["Article"] = df["Article"].astype(str)
         df["Code EAN"] = df["Code EAN"].astype(str)
+
+        df["Code PH1 EN"] = df["Code PH1 EN"].astype(str)
+        mask = df["Code PH1 EN"].str.len() == 1
+        df.loc[mask, "Code PH1 EN"] += "0"
 
         ph_code = [
             "Code PH1 EN",
@@ -149,6 +154,8 @@ class DataLoader:
         df = pd.read_excel(config.DIR_SAP_CURRENT / config.FILES["zpr0"])
         df = df[["Article", "Rate", "Unit of Measure"]]
         df["Article"] = df["Article"].astype(str)
+        if df["Rate"].dtypes == "str":
+            df["Rate"] = self._clean_rate(df["Rate"], divide_by_100=False)
         return df
 
     def _load_zd01(self) -> pd.DataFrame:
